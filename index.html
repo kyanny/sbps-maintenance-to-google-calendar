@@ -1,0 +1,176 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <link rel="stylesheet" href="bootstrap-3.3.6-dist/css/bootstrap.min.css">
+    <style>
+     h1 { margin-bottom: 3rem; }
+     span { font-size: 0.5rem; color: gray; }
+     li { font-size: 2.5rem; margin-bottom: 0.5rem; }
+    </style>
+    <script src="coffee-script.js"></script>
+    <script src="jquery-2.2.1.min.js"></script>
+    <script src="bootstrap-3.3.6-dist/js/bootstrap.min.js"></script>
+    <script type="text/coffeescript">
+     $ ->
+       $('.alert-danger').hide()
+
+       getSrc = -> localStorage['calendar']
+       setSrc = (src) => localStorage['calendar'] = src
+
+       nl = (str) ->
+         str
+         # str.replace(/\r\n?|\n\r?/g, "%0D%0A")
+
+       buildUrl = (content, subject, date, src) ->
+         baseUrl = 'https://www.google.com/calendar/render'
+         queryString = ''
+         queryString += 'action=TEMPLATE&'
+         queryString += "text=#{encodeURIComponent(subject)}&"
+         queryString += "details=#{encodeURIComponent(nl(content))}&"
+         queryString += "src=#{src}&"
+         _getDay = (date) -> date[1] + date[2] + date[3]
+         _getStartAt = (date) -> date[4] + date[5] + '00'
+         _getEndAt = (date) -> date[6] + date[7] + '00'
+         queryString += "dates=#{_getDay(date)}T#{_getStartAt(date)}/#{_getDay(date)}T#{_getEndAt(date)}"
+         "#{baseUrl}?#{queryString}"
+
+       getSubject = (text) ->
+         text.match(/\n(.*?)メンテナンスのご連絡\n/)[1]
+
+       getDates = (text) ->
+         dates = text.match(/\n◆日時\n((?:\n|.)+?)\n\n/)[1]
+         dates.split("\n").map (line) ->
+           l = line.replace(/^\s+/, '')
+                   .replace(/\s+$/, '')
+           m = l.match(/(\d{4})年(\d{1,2})月(\d{1,2})日.*?(\d{1,2})[:：](\d{1,2}).+?(\d{1,2})[:：](\d{1,2})/)
+
+       src = getSrc()
+       if src
+         $('#calendar').val(src)
+       $('#generate').click ->
+         $('.alert-danger').slideUp()
+         content = $('#content').val() #.attr('placeholder')
+         if content.length is 0
+           $('.alert-danger').slideDown()
+           return
+         src = $('#calendar').val()
+         if src
+           setSrc(src)
+         shortContent = content.match(/\n(◆対象(?:\n|.)+?お問合せにつきましては、下記メールアドレスまでお願いいたします。)\n/)[1]
+         subject = getSubject(content)
+         dates = getDates(content)
+         $('#result').empty()
+         $('#content').empty()
+         $ol = $('<ol>')
+         $('#result').append($ol)
+         src = getSrc()
+         src ||= 'default%40gmail.com'
+         dates.forEach (date) ->
+           url = buildUrl(shortContent, subject, date, src)
+           $ol.append(
+             $('<li>').append(
+               $('<a>').attr('href', url).attr('target', '_blank').text("#{date[0]}")
+             )
+           )
+    </script>
+  </head>
+  <body>
+    <div class="container">
+      <h1>SBPSメンテナンスのお知らせをGoogleカレンダーに追加する君</h1>
+      <div class="row">
+        <div class="col-md-5">
+          <form>
+            <div class="form-group">
+              <label for="calendar">カレンダー<span>（次回から保存される）</span></label>
+              <input id="calendar" type="text" class="form-control" placeholder="default%40gmail.com">
+            </div>
+            <div class="form-group">
+              <label for="content">メール本文</label>
+              <textarea id="content" class="form-control" rows="15" placeholder="--------------------------------------------------------------------
+電算システム（WEBコンビニ決済）メンテナンスのご連絡
+--------------------------------------------------------------------
+
+お客様各位
+
+拝啓  時下ますますご清栄のこととお慶び申し上げます。
+平素は弊社サービスをご利用いただき、誠にありがとうございます。
+
+電算システム（WEBコンビニ決済）のメンテナンスに関しまして、
+下記の通りご案内させていただきます。
+
+お客様にはご迷惑をお掛けいたしますが、
+何卒ご理解とご協力を賜りますようお願い申し上げます。
+
+　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　敬具
+
+　　　　　　　　　　　　　　　　　記
+
+◆対象
+・電算システム（WEBコンビニ決済）
+
+◆日時
+① 2016年03月07日（月）　01：00～06：00（※24時間表記）
+② 2016年03月07日（月）　00：15～06：45（※24時間表記）
+③ 2016年03月14日（月）　00：15～06：45（※24時間表記）
+④ 2016年03月14日（月）　05：00～06：00（※24時間表記）
+
+◆内容
+・① Famiポート（ファミリーマート）のシステムメンテナンス
+・②③ Loppi（ローソン、ミニストップ）のシステムメンテナンス
+・④ デイリーヤマザキ接続サーバのメンテナンス
+
+◆影響
+・①の時間帯において、ファミリーマートを支払先とした決済受付ができません。
+　また、ファミリーマート店舗でのFamiポート操作およびお支払いができません。
+
+・②③の時間帯において、ローソンおよびミニストップ店舗での
+  Loppi操作およびお支払いができません。
+
+  ※①②③とも、メンテナンス開始時刻までに申込券を発券されたお客様は、
+    申込券の有効期限30分以内であればお支払いが可能です。
+
+・④の時間帯において、デイリーヤマザキを支払先とした決済受付ができません。
+
+◆備考
+・②③につきましては、決済受付に影響はございません。
+・①④の時間帯にメンテナンス対象のコンビニエンスストアを支払先とした
+  決済申込があった場合、以下のエラー表示となります。
+
+  ＜画面連携型の加盟店様＞
+       コンビニ決済は、只今、ご利用できません。
+  ＜API型の加盟店様＞
+       70120999（一時的なサーバ負荷エラー）
+
+
+弊社サービスをご利用の皆様にはご迷惑をお掛けいたしますが、
+何卒、ご理解の程宜しくお願い申し上げます。
+
+お問合せにつきましては、下記メールアドレスまでお願いいたします。
+
+
+………………………………………………………………………
+ソフトバンク・ペイメント・サービス株式会社（SBPS）
+SBPS加盟店サポート
+〒105-8025
+東京都港区東新橋1-9-2汐留住友ビル25F
+TEL:03-6889-2138/FAX:03-6215-5264
+E-mail：sbps-support@sbpayment.jp
+URL：http://clk.nxlk.jp/12FI5vy2
+………………………………………………………………………
+"></textarea>
+            </div>
+            <div class="form-group">
+              <div class="alert alert-danger">メール本文を入れてくれ!!!</div>
+              <button type="button" id="generate" class="btn btn-primary">押せ</button>
+            </div>
+          </form>
+        </div>
+        <div class="col-md-7">
+          <div id="result">
+            <div class="alert alert-info">ここにリンクが出てくるぞい</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>
