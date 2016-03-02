@@ -8,72 +8,9 @@
      span { font-size: 0.5rem; color: gray; }
      li { font-size: 2.5rem; margin-bottom: 0.5rem; }
     </style>
-    <script src="coffee-script.js"></script>
     <script src="jquery-2.2.1.min.js"></script>
     <script src="bootstrap-3.3.6-dist/js/bootstrap.min.js"></script>
-    <script type="text/coffeescript">
-     $ ->
-       $('.alert-danger').hide()
-
-       getSrc = -> localStorage['calendar']
-       setSrc = (src) => localStorage['calendar'] = src
-
-       nl = (str) ->
-         str
-         # str.replace(/\r\n?|\n\r?/g, "%0D%0A")
-
-       buildUrl = (content, subject, date, src) ->
-         baseUrl = 'https://www.google.com/calendar/render'
-         queryString = ''
-         queryString += 'action=TEMPLATE&'
-         queryString += "text=#{encodeURIComponent(subject)}&"
-         queryString += "details=#{encodeURIComponent(nl(content))}&"
-         queryString += "src=#{src}&"
-         _getDay = (date) -> date[1] + date[2] + date[3]
-         _getStartAt = (date) -> date[4] + date[5] + '00'
-         _getEndAt = (date) -> date[6] + date[7] + '00'
-         queryString += "dates=#{_getDay(date)}T#{_getStartAt(date)}/#{_getDay(date)}T#{_getEndAt(date)}"
-         "#{baseUrl}?#{queryString}"
-
-       getSubject = (text) ->
-         text.match(/\n(.*?)メンテナンスのご連絡\n/)[1]
-
-       getDates = (text) ->
-         dates = text.match(/\n◆日時\n((?:\n|.)+?)\n\n/)[1]
-         dates.split("\n").map (line) ->
-           l = line.replace(/^\s+/, '')
-                   .replace(/\s+$/, '')
-           m = l.match(/(\d{4})年(\d{1,2})月(\d{1,2})日.*?(\d{1,2})[:：](\d{1,2}).+?(\d{1,2})[:：](\d{1,2})/)
-
-       src = getSrc()
-       if src
-         $('#calendar').val(src)
-       $('#generate').click ->
-         $('.alert-danger').slideUp()
-         content = $('#content').val() #.attr('placeholder')
-         if content.length is 0
-           $('.alert-danger').slideDown()
-           return
-         src = $('#calendar').val()
-         if src
-           setSrc(src)
-         shortContent = content.match(/\n(◆対象(?:\n|.)+?お問合せにつきましては、下記メールアドレスまでお願いいたします。)\n/)[1]
-         subject = getSubject(content)
-         dates = getDates(content)
-         $('#result').empty()
-         $('#content').empty()
-         $ol = $('<ol>')
-         $('#result').append($ol)
-         src = getSrc()
-         src ||= 'default%40gmail.com'
-         dates.forEach (date) ->
-           url = buildUrl(shortContent, subject, date, src)
-           $ol.append(
-             $('<li>').append(
-               $('<a>').attr('href', url).attr('target', '_blank').text("#{date[0]}")
-             )
-           )
-    </script>
+    <script src="app.js"></script>
   </head>
   <body>
     <a href="https://github.com/kyanny/sbps-maintenance-to-google-calendar" target="_blank"><img style="position: absolute; top: 0; right: 0; border: 0;" src="https://camo.githubusercontent.com/38ef81f8aca64bb9a64448d0d70f1308ef5341ab/68747470733a2f2f73332e616d617a6f6e6177732e636f6d2f6769746875622f726962626f6e732f666f726b6d655f72696768745f6461726b626c75655f3132313632312e706e67" alt="Fork me on GitHub" data-canonical-src="https://s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png"></a>
