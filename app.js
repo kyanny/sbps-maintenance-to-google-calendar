@@ -12,7 +12,7 @@ $(function() {
       return;
     }
     body = body.replace(/\r\n|\r/g, "\n");
-    var title = body.match(/\n((?:.*?)メンテナンス)のご連絡\n/)[1];
+    var title = body.match(/\n((?:.*?)メンテナンス)のご連絡\s*\n/)[1];
     title = title.replace(/^\s+/, '').replace(/\s+$/, '');
     var lines = body.match(/◆日時.*\n([\s\S]+?)\n\n/);
     var lines = lines[1];
