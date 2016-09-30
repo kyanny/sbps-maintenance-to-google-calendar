@@ -84,4 +84,26 @@ $(function() {
 
     localStorage['src'] = src;
   })
+
+  var presetMailContent = function() {
+    var params = location
+      .search
+      .substr(1)
+      .split('&')
+      .reduce(function(h, kv) {
+        var d = kv.split('='),
+          k = d[0],
+          v = decodeURI(d[1]);
+        if (k) {
+          h[k] = v;
+        }
+        return h;
+      }, {});
+
+    if (params.body) {
+      $('#content').val(params.body);
+    }
+  };
+
+  presetMailContent();
 });
