@@ -52,7 +52,7 @@ $(function() {
         $('.alert-danger').slideDown();
       }
       return date;
-    });
+    }).filter(function(d) { return d; });
 
     $('#result').empty();
     var src = $('#calendar').val();
