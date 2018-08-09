@@ -48,11 +48,13 @@ $(function() {
           endHour: m[6],
           endMinute: m[7]
         };
-      } else {
-        $('.alert-danger').slideDown();
       }
       return date;
     }).filter(function(d) { return d; });
+
+    if (datetimes.length === 0) {
+      $('.alert-danger').slideDown();
+    }
 
     $('#result').empty();
     var src = $('#calendar').val();
