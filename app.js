@@ -5,6 +5,13 @@ $(function() {
     $('#calendar').val(src);
   }
 
+  function padZero(targetNumber, digit) {
+    var zeros = Array(digit + 1).join("0");
+    return (zeros + targetNumber).slice(-digit);
+  }
+
+  var pad2ZeroFields = ["startMonth", "startDay", "startHour", "endMonth", "endDay", "endHour"];
+
   $('#generate').click(function(){
     var body = $('#content').val();
     if (!body) {
@@ -50,7 +57,14 @@ $(function() {
         };
       }
       return date;
-    }).filter(function(d) { return d; });
+    })
+      .filter(function(d) { return d; })
+      .map(function (d) {
+        pad2ZeroFields.forEach(function (field) {
+          d[field] = padZero(d[field], 2);
+        });
+        return d;
+      });
 
     if (datetimes.length === 0) {
       $('.alert-danger').slideDown();
